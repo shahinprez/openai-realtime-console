@@ -50,10 +50,8 @@ export default function App() {
       },
     });
 
-    const answer = {
-      type: "answer",
-      sdp: await sdpResponse.text(),
-    };
+    const sdp = await sdpResponse.text();
+    const answer = { type: "answer", sdp };
     await pc.setRemoteDescription(answer);
 
     peerConnection.current = pc;
