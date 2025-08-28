@@ -4,6 +4,7 @@ import { createServer as createViteServer } from "vite";
 import "dotenv/config";
 
 const app = express();
+app.use(express.text());
 const port = process.env.PORT || 3000;
 const apiKey = process.env.OPENAI_API_KEY;
 
@@ -14,21 +15,52 @@ const vite = await createViteServer({
 });
 app.use(vite.middlewares);
 
-// API route for token generation
+const sessionConfig = JSON.stringify({
+  session: {
+    type: "realtime",
+    model: "gpt-realtime",
+    audio: {
+      output: {
+        voice: "marin",
+      },
+    },
+  },
+});
+
+// All-in-one SDP request (experimental)
+app.post("/session", async (req, res) => {
+  const fd = new FormData();
+  console.log(req.body);
+  fd.set("sdp", req.body);
+  fd.set("session", sessionConfig);
+
+  const r = await fetch("https://api.openai.com/v1/realtime/calls", {
+    method: "POST",
+    headers: {
+      "OpenAI-Beta": "realtime=v1",
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+    },
+    body: fd,
+  });
+  const sdp = await r.text();
+  console.log(sdp);
+
+  // Send back the SDP we received from the OpenAI REST API
+  res.send(sdp);
+});
+
+// API route for ephemeral token generation
 app.get("/token", async (req, res) => {
   try {
     const response = await fetch(
-      "https://api.openai.com/v1/realtime/sessions",
+      "https://api.openai.com/v1/realtime/client_secrets",
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          model: "gpt-4o-realtime-preview-2025-06-03",
-          voice: "verse",
-        }),
+        body: sessionConfig,
       },
     );
 

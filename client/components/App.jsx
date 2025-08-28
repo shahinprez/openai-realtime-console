@@ -15,7 +15,7 @@ export default function App() {
     // Get a session token for OpenAI Realtime API
     const tokenResponse = await fetch("/token");
     const data = await tokenResponse.json();
-    const EPHEMERAL_KEY = data.client_secret.value;
+    const EPHEMERAL_KEY = data.value;
 
     // Create a peer connection
     const pc = new RTCPeerConnection();
@@ -39,8 +39,8 @@ export default function App() {
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
 
-    const baseUrl = "https://api.openai.com/v1/realtime";
-    const model = "gpt-4o-realtime-preview-2024-12-17";
+    const baseUrl = "https://api.openai.com/v1/realtime/calls";
+    const model = "gpt-realtime";
     const sdpResponse = await fetch(`${baseUrl}?model=${model}`, {
       method: "POST",
       body: offer.sdp,

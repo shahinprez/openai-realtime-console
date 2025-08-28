@@ -7,6 +7,7 @@ Call this function when a user asks for a color palette.
 const sessionUpdate = {
   type: "session.update",
   session: {
+    type: "realtime",
     tools: [
       {
         type: "function",
@@ -118,15 +119,13 @@ export default function ToolPanel({
     <section className="h-full w-full flex flex-col gap-4">
       <div className="h-full bg-gray-50 rounded-md p-4">
         <h2 className="text-lg font-bold">Color Palette Tool</h2>
-        {isSessionActive ? (
-          functionCallOutput ? (
-            <FunctionCallOutput functionCallOutput={functionCallOutput} />
-          ) : (
-            <p>Ask for advice on a color palette...</p>
+        {isSessionActive
+          ? (
+            functionCallOutput
+              ? <FunctionCallOutput functionCallOutput={functionCallOutput} />
+              : <p>Ask for advice on a color palette...</p>
           )
-        ) : (
-          <p>Start the session to use this tool...</p>
-        )}
+          : <p>Start the session to use this tool...</p>}
       </div>
     </section>
   );
