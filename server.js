@@ -4,6 +4,37 @@ import { createServer as createViteServer } from "vite";
 import "dotenv/config";
 
 const app = express();
+
+// Create a short-lived client secret for the browser
+app.post("/api/ephemeral", async (req, res) => {
+  try {
+    const r = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        session: {
+          type: "realtime",
+          // you can pre-configure voice or instructions here if you like
+          // voice: "alloy",
+          // instructions: "You are a negotiation assistant..."
+        }
+      }),
+    });
+
+    if (!r.ok) {
+      return res.status(r.status).send(await r.text());
+    }
+    const data = await r.json();
+    res.json(data); // sends the client_secret back to the browser
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Failed to create client secret");
+  }
+});
+
 app.use(express.text());
 const port = process.env.PORT || 3000;
 const apiKey = process.env.OPENAI_API_KEY;
